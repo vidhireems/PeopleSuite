@@ -1,10 +1,11 @@
+import os
 from flask import Blueprint, make_response, request, jsonify
 from model import EmployeeModel
 
 employeesBlueprint = Blueprint('employees', __name__)
 
 # GET API to get an Employee's profile
-@employeesBlueprint.route('/employees/<employeeId>/profile', methods=['GET'])
+@employeesBlueprint.route('/peoplesuite/apis/employees/<employeeId>/profile', methods=['GET'])
 def getEmployee(employeeId):
     employeeId = int(employeeId)
     employeeModel = EmployeeModel()
@@ -14,7 +15,7 @@ def getEmployee(employeeId):
     return jsonify(employee)
 
 # POST API to get create Employee's profile
-@employeesBlueprint.route('/employees/<employeeId>/profile', methods=['POST'])
+@employeesBlueprint.route('/peoplesuite/apis/employees/<employeeId>/profile', methods=['POST'])
 def createEmployee(employeeId):
     employeeId = int(employeeId)
     employeeData = request.json
@@ -31,7 +32,7 @@ def createEmployee(employeeId):
             }), 200
 
 # GET API to get an Employee's photo
-@employeesBlueprint.route('/employees/<employeeId>/photo', methods=['GET'])
+@employeesBlueprint.route('/peoplesuite/apis/employees/<employeeId>/photo', methods=['GET'])
 def getEmployeePhoto(employeeId):
     employeeModel = EmployeeModel()
     employee = employeeModel.getEmployee(int(employeeId))
@@ -50,7 +51,7 @@ def getEmployeePhoto(employeeId):
     return response
        
 # PUT API to update an Employee's photo
-@employeesBlueprint.route('/employees/<employeeId>/photo', methods=['PUT'])
+@employeesBlueprint.route('/peoplesuite/apis/employees/<employeeId>/photo', methods=['PUT'])
 def updateEmployeePhoto(employeeId):
     employeeModel = EmployeeModel()
     employee = employeeModel.getEmployee(int(employeeId))
@@ -68,7 +69,7 @@ def updateEmployeePhoto(employeeId):
         return jsonify({'message': 'Error uploading employee photo'}), 500
 
 # GET API to get a list of employees in a department
-@employeesBlueprint.route('/employees/<departmentId>', methods=['GET'])
+@employeesBlueprint.route('/peoplesuite/apis/employees/<departmentId>', methods=['GET'])
 def getEmployeesByDepartment(departmentId):
 
     employeeModel = EmployeeModel()
@@ -78,7 +79,8 @@ def getEmployeesByDepartment(departmentId):
     for employee in employees:
         employeeId = employee['employeeId']
         employeeName = employee['firstName'] + ' ' + employee['lastName']
-        profileUrl = 'http://localhost:5000/employees/' + str(employee['employeeId']) + '/profile'
+        currentDomain = os.environ.get('DOMAIN', 'http://localhost:5000')
+        profileUrl = f'{currentDomain}/peoplesuite/apis/employees/' + str(employee['employeeId']) + '/profile'
         updatedEmployee = {
             'employeeId': employeeId,
             'employeeName': employeeName,
