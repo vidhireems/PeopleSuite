@@ -5,6 +5,9 @@ AWS_ACCESS_KEY_ID     = config("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
 REGION_NAME           = config("REGION_NAME")
 BUCKET_NAME           = config("BUCKET_NAME")
+API_KEY               = config("API_KEY")
+API_SECRET            = config("API_SECRET")
+ACCESS_TOKEN          = config("ACCESS_TOKEN")
 
 client = boto3.client(
     'dynamodb',

@@ -1,6 +1,7 @@
 import os
 from flask import Blueprint, make_response, request, jsonify
 from model import EmployeeModel
+import DbHandler as db
 
 employeesBlueprint = Blueprint('employees', __name__)
 
@@ -9,9 +10,27 @@ employeesBlueprint = Blueprint('employees', __name__)
 def healthCheck():
     return jsonify({'message': 'Health check successful' }), 200
 
+# Endpoint for the client to send API Key and Secret to obtain an access token
+@employeesBlueprint.route('/peoplesuite/apis/employees/oauth/token', methods=['POST'])
+def get_access_token():
+    if request.json['api_key'] == db.API_KEY and request.json['api_secret'] == db.API_SECRET:
+        access_token = db.ACCESS_TOKEN
+        expires_in = 3600  # Token expiration time in seconds
+        
+        response = {
+            'access_token': access_token,
+            'expires_in': expires_in
+        }
+        return jsonify(response), 200
+    else:
+        return jsonify({'error': 'Invalid credentials'}), 401
+
 # GET API to get an Employee's profile
 @employeesBlueprint.route('/peoplesuite/apis/employees/<employeeId>/profile', methods=['GET'])
 def getEmployee(employeeId):
+    access_token = request.headers.get('Authorization', '').replace('Bearer ', '')
+    if access_token != db.ACCESS_TOKEN:
+        return jsonify({'error': 'Invalid access token'}), 401
     employeeId = int(employeeId)
     employeeModel = EmployeeModel()
     employee = employeeModel.getEmployee(employeeId)
@@ -22,6 +41,9 @@ def getEmployee(employeeId):
 # POST API to get create Employee's profile
 @employeesBlueprint.route('/peoplesuite/apis/employees/<employeeId>/profile', methods=['POST'])
 def createEmployee(employeeId):
+    access_token = request.headers.get('Authorization', '').replace('Bearer ', '')
+    if access_token != db.ACCESS_TOKEN:
+        return jsonify({'error': 'Invalid access token'}), 401
     employeeId = int(employeeId)
     employeeData = request.json
     employeeModel = EmployeeModel()
@@ -39,6 +61,9 @@ def createEmployee(employeeId):
 # GET API to get an Employee's photo
 @employeesBlueprint.route('/peoplesuite/apis/employees/<employeeId>/photo', methods=['GET'])
 def getEmployeePhoto(employeeId):
+    access_token = request.headers.get('Authorization', '').replace('Bearer ', '')
+    if access_token != db.ACCESS_TOKEN:
+        return jsonify({'error': 'Invalid access token'}), 401
     employeeModel = EmployeeModel()
     employee = employeeModel.getEmployee(int(employeeId))
     
@@ -58,6 +83,9 @@ def getEmployeePhoto(employeeId):
 # PUT API to update an Employee's photo
 @employeesBlueprint.route('/peoplesuite/apis/employees/<employeeId>/photo', methods=['PUT'])
 def updateEmployeePhoto(employeeId):
+    access_token = request.headers.get('Authorization', '').replace('Bearer ', '')
+    if access_token != db.ACCESS_TOKEN:
+        return jsonify({'error': 'Invalid access token'}), 401
     employeeModel = EmployeeModel()
     employee = employeeModel.getEmployee(int(employeeId))
     if employee == "EMPLOYEE_NOT_FOUND":
