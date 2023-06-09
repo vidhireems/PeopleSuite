@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: common
+  name: ingress-common
+  annotations:
+    alb.ingress.kubernetes.io/group.name: people-suite-lb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /peoplesuite/apis/departments
+            pathType: Prefix
+            backend:
+              service:
+                name: department-service
+                port:
+                  number: 80
+          - path: /peoplesuite/apis/employees
+            pathType: Prefix
+            backend:
+              service:
+                name: employee-service
+                port:
+                  number: 80

@@ -2,6 +2,8 @@
 
 FROM python:3.8-slim-buster
 
+EXPOSE 5000
+
 WORKDIR /app
 
 COPY requirements.txt requirements.txt

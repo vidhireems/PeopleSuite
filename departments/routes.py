@@ -11,7 +11,7 @@ def getDepartment():
     departmentModel = DepartmentModel()
     department = departmentModel.getDepartments()
     if department:
-        return jsonify(department)
+        return jsonify(department), 200
     else:
         return jsonify({'message': 'Department not found'}), 404
 

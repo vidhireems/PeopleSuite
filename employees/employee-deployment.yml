@@ -4,6 +4,14 @@ kind: Namespace
 metadata:
   name: employee
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: employee
+  name: employee-config
+data:
+  DOMAIN: http://k8s-peoplesuitelb-da30c86c91-503852210.us-east-1.elb.amazonaws.com
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,6 +33,9 @@ spec:
         name: employee-app
         ports:
         - containerPort: 5000
+        envFrom:
+          - configMapRef:
+              name: employee-config
 ---
 apiVersion: v1
 kind: Service
@@ -39,3 +50,26 @@ spec:
   type: NodePort
   selector:
     app.kubernetes.io/name: employee-app
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: employee
+  name: ingress-employee
+  annotations:
+    alb.ingress.kubernetes.io/group.name: people-suite-lb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  ingressClassName: alb
+  rules:
+    - host: k8s-peoplesuitelb-da30c86c91-503852210.us-east-1.elb.amazonaws.com
+      http:
+        paths:
+          - path: /peoplesuite/apis/employees
+            pathType: Prefix
+            backend:
+              service:
+                name: employee-service
+                port:
+                  number: 80

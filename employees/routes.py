@@ -4,6 +4,11 @@ from model import EmployeeModel
 
 employeesBlueprint = Blueprint('employees', __name__)
 
+# GET API to perform health check in target group
+@employeesBlueprint.route('/peoplesuite/apis/employees', methods=['GET'])
+def healthCheck():
+    return jsonify({'message': 'Health check successful' }), 200
+
 # GET API to get an Employee's profile
 @employeesBlueprint.route('/peoplesuite/apis/employees/<employeeId>/profile', methods=['GET'])
 def getEmployee(employeeId):
@@ -12,7 +17,7 @@ def getEmployee(employeeId):
     employee = employeeModel.getEmployee(employeeId)
     if employee == "EMPLOYEE_NOT_FOUND":
         return jsonify({'message': 'Employee not found' }), 404
-    return jsonify(employee)
+    return jsonify(employee), 200
 
 # POST API to get create Employee's profile
 @employeesBlueprint.route('/peoplesuite/apis/employees/<employeeId>/profile', methods=['POST'])
@@ -64,7 +69,7 @@ def updateEmployeePhoto(employeeId):
     photoFile = request.files['image']
     try:
         employeeModel.uploadPhotoToS3(photoFile, employeeId)
-        return jsonify({'message': 'Photo uploaded successfully'})
+        return jsonify({'message': 'Photo uploaded successfully'}), 200
     except Exception as e:
         return jsonify({'message': 'Error uploading employee photo'}), 500
 

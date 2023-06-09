@@ -4,6 +4,14 @@ kind: Namespace
 metadata:
   name: department
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: department
+  name: department-config
+data:
+  DOMAIN: http://k8s-peoplesuitelb-da30c86c91-503852210.us-east-1.elb.amazonaws.com
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,7 +32,10 @@ spec:
         imagePullPolicy: Always
         name: department-app
         ports:
-        - containerPort: 5001
+        - containerPort: 80
+        envFrom:
+          - configMapRef:
+              name: department-config
 ---
 apiVersion: v1
 kind: Service
@@ -34,8 +45,31 @@ metadata:
 spec:
   ports:
     - port: 80
-      targetPort: 5001
+      targetPort: 80
       protocol: TCP
   type: NodePort
   selector:
     app.kubernetes.io/name: department-app
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: department
+  name: ingress-department
+  annotations:
+    alb.ingress.kubernetes.io/group.name: people-suite-lb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  ingressClassName: alb
+  rules:
+    - host: k8s-peoplesuitelb-da30c86c91-503852210.us-east-1.elb.amazonaws.com
+      http:
+        paths:
+          - path: /peoplesuite/apis/departments
+            pathType: Prefix
+            backend:
+              service:
+                name: department-service
+                port:
+                  number: 80
